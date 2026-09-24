@@ -12,14 +12,6 @@ It combines a **React + TypeScript** frontend, a **FastAPI + LangGraph** backend
 
 ### Animated Demo
 
-Place your GIF here:
-
-```text
-assets/demo.gif
-```
-
-It will be displayed directly in the README:
-
 <p align="center">
   <img src="assets/demo.gif" alt="KAIROS animated demo" width="900">
 </p>
