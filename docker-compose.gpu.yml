@@ -1,0 +1,14 @@
+# Optionnel — accélération GPU NVIDIA pour Ollama.
+# Prérequis : pilote NVIDIA + NVIDIA Container Toolkit (Linux) ou
+# Docker Desktop avec backend WSL2 (Windows).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

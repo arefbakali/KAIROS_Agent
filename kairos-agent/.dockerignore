@@ -1,0 +1,20 @@
+# Environnements Python locaux : l'image installe ses propres dépendances.
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# État d'exécution : contient des jetons OAuth Gmail. Jamais dans l'image —
+# monté en volume à l'exécution (voir docker-compose.yml).
+data/
+
+# Secrets et config locale : injectés via env_file/environment à l'exécution.
+.env
+.env.example
+
+# Sans rapport avec l'image d'exécution.
+tests/
+.pytest_cache/
+README.md
+.git/

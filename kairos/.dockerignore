@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.git/
+*.log
+.DS_Store
+
+# Config locale : les VITE_* arrivent en arguments de build (docker-compose.yml).
+.env
+.env.*
+
+# Caches de « tsc -b » : un cache venu de l'hôte pourrait faire sauter
+# la vérification de types dans l'image.
+*.tsbuildinfo

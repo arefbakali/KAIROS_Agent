@@ -1,0 +1,187 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  KAIROS — « Own your time. »
+
+  Bleu azur et violet indigo, sur un papier froid légèrement bleuté.
+  Le dégradé n'apparaît qu'à trois endroits : la marque, l'action principale
+  et le bandeau de la page de connexion. Jamais en fond de contenu.
+*/
+@theme {
+  --color-paper: #f4f5fa;
+  --color-paper-deep: #eceef8;
+  --color-surface: #ffffff;
+  --color-surface-2: #f7f8fd;
+  --color-ink: #12142b;
+  --color-ink-2: #363a5e;
+  --color-ink-soft: #5f648c;
+  --color-ink-faint: #8e93b5;
+  --color-line: #e3e6f3;
+  --color-line-strong: #ccd1e8;
+
+  /* Violet indigo : identité, actions principales */
+  --color-accent: #6c4cf1;
+  --color-accent-2: #2b7bf6;
+  --color-accent-soft: #eeeafe;
+  --color-accent-ink: #4a2ec4;
+
+  --color-urgent: #e14b5a;
+  --color-urgent-soft: #fdecee;
+  --color-ok: #0ea47f;
+  --color-ok-soft: #e2f6f1;
+  /* Azur : concentration, informations neutres */
+  --color-focus: #2b7bf6;
+  --color-focus-soft: #e7f0ff;
+
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-xs: 7px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
+
+  --shadow-hair: 0 1px 2px rgb(18 20 43 / 0.04), 0 1px 3px rgb(18 20 43 / 0.03);
+  --shadow-lift: 0 2px 4px rgb(18 20 43 / 0.04), 0 14px 32px -14px rgb(30 27 90 / 0.18);
+  --shadow-float: 0 8px 18px -10px rgb(30 27 90 / 0.22), 0 28px 64px -22px rgb(30 27 90 / 0.3);
+  --shadow-brand: 0 6px 16px -6px rgb(108 76 241 / 0.45);
+}
+
+.dark {
+  --color-paper: #08091a;
+  --color-paper-deep: #05060f;
+  --color-surface: #101227;
+  --color-surface-2: #171a33;
+  --color-ink: #e8eafa;
+  --color-ink-2: #c3c7e6;
+  --color-ink-soft: #8b90b8;
+  --color-ink-faint: #646990;
+  --color-line: #232744;
+  --color-line-strong: #323757;
+
+  --color-accent: #8b6dff;
+  --color-accent-2: #4e96ff;
+  --color-accent-soft: #1e1a3d;
+  --color-accent-ink: #b9a5ff;
+
+  --color-urgent: #f0707d;
+  --color-urgent-soft: #2c1620;
+  --color-ok: #2dc39c;
+  --color-ok-soft: #0d2620;
+  --color-focus: #4e96ff;
+  --color-focus-soft: #10203c;
+
+  --shadow-hair: 0 1px 2px rgb(0 0 0 / 0.45);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.35), 0 14px 32px -14px rgb(0 0 0 / 0.7);
+  --shadow-float: 0 8px 18px -10px rgb(0 0 0 / 0.6), 0 28px 64px -22px rgb(0 0 0 / 0.8);
+  --shadow-brand: 0 6px 18px -6px rgb(139 109 255 / 0.5);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv05' 1, 'ss03' 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 5px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.022em;
+  }
+}
+
+@layer utilities {
+  .font-numeric {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  /* Le dégradé de marque : azur → violet. Usage volontairement rare. */
+  .bg-brand {
+    background-image: linear-gradient(135deg, var(--color-accent-2) 0%, var(--color-accent) 62%);
+  }
+
+  .text-brand {
+    background-image: linear-gradient(120deg, var(--color-accent-2), var(--color-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .ring-brand {
+    box-shadow: var(--shadow-brand);
+  }
+
+  /* Bandes « respiration » : créneaux libres du planning */
+  .breath-band {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--color-line-strong) 60%, transparent) 0 1px,
+      transparent 1px 9px
+    );
+  }
+
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  .scroll-slim::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scroll-slim::-webkit-scrollbar-thumb {
+    background: var(--color-line-strong);
+    border-radius: 99px;
+  }
+  .scroll-slim::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

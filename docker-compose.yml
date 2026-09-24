@@ -1,0 +1,120 @@
+# KAIROS — orchestration Docker Compose.
+#
+#   navigateur ──▶ frontend (nginx :80, publié sur ${FRONTEND_PORT:-5173})
+#                     │  /api/*  (reverse proxy, même origine)
+#                     ▼
+#                  backend (FastAPI + LangGraph :8000, publié sur ${BACKEND_PORT:-8000})
+#                     │  http://ollama:11434  (réseau interne uniquement)
+#                     ▼
+#                  ollama (Llama 3.2 3B, modèles dans le volume ollama-models)
+#
+# Variables : voir .env.example à la racine (ports, modèle, VITE_* du build).
+# Secrets du backend : kairos-agent/.env (jamais copiés dans une image).
+
+services:
+  # ── LLM ──────────────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:${OLLAMA_VERSION:-0.32.1}
+    container_name: kairos-ollama
+    volumes:
+      # Poids des modèles (~2 Go pour llama3.2:3b) : téléchargés une seule
+      # fois, conservés entre redémarrages et reconstructions.
+      - ollama-models:/root/.ollama
+    # Pas de port publié : seul le backend y accède, via le réseau interne.
+    # (Évite aussi le conflit avec un Ollama déjà lancé sur l'hôte :11434.)
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks: [kairos]
+    restart: unless-stopped
+
+  # Tâche ponctuelle : télécharge le modèle s'il est absent du volume, puis
+  # s'arrête. Idempotente — ne retélécharge rien au démarrage suivant.
+  ollama-pull:
+    image: ollama/ollama:${OLLAMA_VERSION:-0.32.1}
+    container_name: kairos-ollama-pull
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      LLM_MODEL: ${LLM_MODEL:-llama3.2:3b}
+    entrypoint: ["/bin/sh", "-c"]
+    command: ['ollama show "$$LLM_MODEL" >/dev/null 2>&1 || ollama pull "$$LLM_MODEL"']
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks: [kairos]
+    restart: "no"
+
+  # ── Backend ──────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./kairos-agent
+    image: kairos-backend:latest
+    container_name: kairos-backend
+    env_file:
+      - ./kairos-agent/.env
+    environment:
+      # Priment sur kairos-agent/.env : « localhost » y désigne l'hôte, alors
+      # que dans le conteneur il désignerait le conteneur lui-même.
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      LLM_MODEL: ${LLM_MODEL:-llama3.2:3b}
+    ports:
+      # Conservé : redirect URI OAuth Gmail (…:8000/api/reminders/callback)
+      # et VITE_AGENT_API_URL par défaut pointent ici.
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      # Seul état persistant du backend : jetons OAuth Gmail et rappels
+      # planifiés (app/services/reminder_storage.py). La mémoire
+      # conversationnelle reste en RAM — comportement inchangé.
+      - ./kairos-agent/data:/app/data
+    extra_hosts:
+      # Sert uniquement si OLLAMA_BASE_URL=http://host.docker.internal:11434
+      # (Ollama natif de l'hôte, voir DOCKER.md).
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      ollama-pull:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks: [kairos]
+    restart: unless-stopped
+
+  # ── Frontend ─────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./kairos
+      # Vite intègre les VITE_* au bundle au moment du build : ce sont des
+      # valeurs publiques (visibles dans le JS), pas des secrets.
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+        VITE_AGENT_API_URL: ${VITE_AGENT_API_URL:-http://localhost:8000}
+    image: kairos-frontend:latest
+    container_name: kairos-frontend
+    ports:
+      # Port hôte 5173 conservé : origine autorisée dans Google Cloud Console
+      # et dans le CORS du backend (FRONTEND_ORIGIN).
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks: [kairos]
+    restart: unless-stopped
+
+networks:
+  kairos:
+    name: kairos-net
+
+volumes:
+  ollama-models:
+    name: kairos-ollama-models

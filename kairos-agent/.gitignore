@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+# État d'exécution : jetons OAuth Gmail + rappels (volume Docker).
+data/

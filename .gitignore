@@ -1,0 +1,13 @@
+.env
+kairos/.env
+kairos-agent/.env
+
+venv/
+.venv/
+node_modules/
+dist/
+
+__pycache__/
+*.pyc
+
+kairos-agent/data/
