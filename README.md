@@ -844,19 +844,4 @@ Université Paris Dauphine-PSL
 
 ---
 
-## Demo Files Reminder
 
-Before publishing the repository, add:
-
-```text
-assets/demo.gif
-assets/demo.mp4
-```
-
-The GIF will appear directly in the README.
-
-The MP4 will be available through:
-
-```markdown
-🎥 **[Watch the full KAIROS demo](assets/demo.mp4)**
-```
